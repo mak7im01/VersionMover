@@ -1,0 +1,8 @@
+/* Перемещение номера версии в правый угол */
+.MainPage_beta__y32vb,
+.MainPage_beta_withReleaseNotes__WOjUk {
+    position: fixed !important;
+    left: auto !important;
+    right: 25px !important;
+    top: 46px !important;
+}

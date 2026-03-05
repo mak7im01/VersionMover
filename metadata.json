@@ -1,0 +1,16 @@
+{
+    "name": "VersionMover",
+    "author": "dobryjigrok",
+    "description": "Перемещает номер версии с левого угла в правый на главной странице",
+    "version": "1.0.0",
+    "css": "style.css",
+    "type": "script",
+    "script": "script.js",
+    "tags": [
+        "script",
+        "version",
+        "ui-tweak",
+        "utility"
+    ],
+    "fromPext": true
+}

@@ -1,0 +1,79 @@
+{
+    "sections": [
+        {
+            "title": "Позиционирование",
+            "items": [
+                {
+                    "id": "enableMove",
+                    "name": "Включить перемещение",
+                    "description": "Перемещать номер версии в правый угол",
+                    "type": "button",
+                    "bool": true,
+                    "defaultParameter": true
+                },
+                {
+                    "id": "hideVersion",
+                    "name": "Скрыть версию",
+                    "description": "Полностью скрыть номер версии",
+                    "type": "button",
+                    "bool": false,
+                    "defaultParameter": false
+                },
+                {
+                    "id": "horizontalPosition",
+                    "name": "Отступ справа (px)",
+                    "description": "Расстояние от правого края экрана",
+                    "type": "slider",
+                    "min": 0,
+                    "max": 200,
+                    "step": 5,
+                    "value": 25,
+                    "defaultParameter": 25
+                },
+                {
+                    "id": "verticalPosition",
+                    "name": "Отступ сверху (px)",
+                    "description": "Расстояние от верхнего края экрана",
+                    "type": "slider",
+                    "min": 0,
+                    "max": 200,
+                    "step": 5,
+                    "value": 45,
+                    "defaultParameter": 45
+                }
+            ]
+        },
+        {
+            "title": "Внешний вид",
+            "items": [
+                {
+                    "id": "customBackground",
+                    "name": "Пользовательский фон",
+                    "description": "Изменить цвет фона кнопки версии",
+                    "type": "button",
+                    "bool": false,
+                    "defaultParameter": false
+                },
+                {
+                    "id": "backgroundColor",
+                    "name": "Цвет фона",
+                    "description": "Цвет фона кнопки версии",
+                    "type": "color",
+                    "input": "#1A1A1AFF",
+                    "defaultParameter": "#1a1a1a"
+                },
+                {
+                    "id": "opacity",
+                    "name": "Прозрачность (%)",
+                    "description": "Прозрачность кнопки версии (минимум 10% для видимости)",
+                    "type": "slider",
+                    "min": 10,
+                    "max": 100,
+                    "step": 5,
+                    "value": 100,
+                    "defaultParameter": 100
+                }
+            ]
+        }
+    ]
+}
