@@ -1,8 +1,9 @@
 {
     "name": "VersionMover",
+    "libraryLogo": "logo.svg",
     "author": "dobryjigrok",
     "description": "Перемещает номер версии с левого угла в правый на главной странице",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "css": "style.css",
     "type": "script",
     "script": "script.js",
@@ -12,5 +13,9 @@
         "ui-tweak",
         "utility"
     ],
-    "fromPext": true
+    "image": "logo.svg",
+    "banner": "banner.svg",
+    "fromPext": true,
+    "installSource": "local",
+    "id": "816e16ed47f4af9c5ec24919"
 }

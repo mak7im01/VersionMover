@@ -1,57 +1,42 @@
 // Скрипт для перемещения номера версии с поддержкой настроек
 (function() {
     'use strict';
-    
-    // Получение настроек из PulseSync
-    async function getSettings(name) {
-        try {
-            const response = await fetch(`http://localhost:2007/get_handle?name=${name}`);
-            if (!response.ok) throw new Error(`Ошибка сети: ${response.status}`);
-      
-            const { data } = await response.json();
-            if (!data?.sections) {
-                console.warn("Структура данных не соответствует ожидаемой");
-                return null;
+
+    // --- Хелперы для нового PulseSync API ---
+
+    function unwrapSetting(entry, fallback) {
+        if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+            if (typeof entry.value !== 'undefined') return entry.value;
+            if (typeof entry.default !== 'undefined') return entry.default;
+        }
+        return typeof entry !== 'undefined' ? entry : fallback;
+    }
+
+    function readBooleanSetting(settings, key, fallback) {
+        return Boolean(unwrapSetting(settings[key], fallback));
+    }
+
+    function readNumberSetting(settings, key, fallback) {
+        return Number(unwrapSetting(settings[key], fallback));
+    }
+
+    function readStringSetting(settings, key, fallback) {
+        return String(unwrapSetting(settings[key], fallback));
+    }
+
+    // Получение store настроек через новое API window.pulsesyncApi
+    function getAddonSettings(addonName) {
+        return (
+            window.pulsesyncApi?.getSettings(addonName) ?? {
+                getCurrent: () => ({}),
+                onChange: () => () => {},
             }
-
-            return transformJSON(data);
-        } catch (error) {
-            console.error(error);
-            return null;
-        }
+        );
     }
 
-    // Трансформирование полученных настроек для удобного использования
-    function transformJSON(data) {
-        const result = {};
+    // --- Применение настроек ---
 
-        try {
-            data.sections.forEach(section => {
-                section.items.forEach(item => {
-                    if (item.type === "text" && item.buttons) {
-                        result[item.id] = {};
-                        item.buttons.forEach(button => {
-                            result[item.id][button.id] = {
-                                value: button.text,
-                                default: button.defaultParameter
-                            };
-                        });
-                    } else {
-                        result[item.id] = {
-                            value: item.bool || item.input || item.selected || item.value || item.filePath,
-                            default: item.defaultParameter
-                        };
-                    }
-                });
-            });
-        } finally {
-            return result;
-        }
-    }
-    
-    // Применение настроек
     function applySettings(settings) {
-        // Создание контейнера для динамического CSS
         let styleElement = document.getElementById('version-mover-style');
         if (!styleElement) {
             styleElement = document.createElement('style');
@@ -59,11 +44,10 @@
             document.head.appendChild(styleElement);
         }
 
-        // Очищаем для перезаписи
         styleElement.textContent = '';
 
-        // Если включено скрытие версии
-        if (settings.hideVersion.value === true) {
+        const hideVersion = readBooleanSetting(settings, 'hideVersion', false);
+        if (hideVersion) {
             styleElement.textContent = `
                 .MainPage_beta__y32vb,
                 .MainPage_beta_withReleaseNotes__WOjUk {
@@ -73,74 +57,62 @@
             return;
         }
 
-        // Применяем настройки только если перемещение включено
-        if (settings.enableMove.value === true) {
-            const rightPos = settings.horizontalPosition.value;
-            const topPos = settings.verticalPosition.value;
-            const opacity = settings.opacity.value / 100;
-            
+        {
+            const rightPos = 15;
+            const opacity  = readNumberSetting(settings, 'opacity', 100) / 100;
+
+            // Вертикальное положение: 1 = вверху, 2 = по центру, 3 = внизу
+            const vPos = readNumberSetting(settings, 'verticalPosition', 1);
+            let verticalCSS;
+            if (vPos === 2) {
+                verticalCSS = 'top: 50% !important; transform: translateY(-50%) !important;';
+            } else if (vPos === 3) {
+                verticalCSS = 'top: auto !important; bottom: 16px !important;';
+            } else {
+                verticalCSS = 'top: 100px !important;';
+            }
+
             let cssRules = `
                 .MainPage_beta__y32vb,
                 .MainPage_beta_withReleaseNotes__WOjUk {
                     position: fixed !important;
                     left: auto !important;
                     right: ${rightPos}px !important;
-                    top: ${topPos}px !important;
+                    ${verticalCSS}
                     opacity: ${opacity} !important;
             `;
 
-            // Добавляем пользовательский фон если включено
-            if (settings.customBackground.value === true) {
-                cssRules += `
-                    background-color: ${settings.backgroundColor.value} !important;
-                `;
+            const customBackground = readBooleanSetting(settings, 'customBackground', false);
+            if (customBackground) {
+                const bgColor = readStringSetting(settings, 'backgroundColor', '#1a1a1a');
+                cssRules += `background-color: ${bgColor} !important;`;
             }
 
             cssRules += `}`;
             styleElement.textContent = cssRules;
         }
     }
-    
-    // Функция для перемещения кнопки версии (резервная, если настройки не загружены)
-    function moveVersionButton() {
-        const versionButton = document.querySelector('.MainPage_beta__y32vb, .MainPage_beta_withReleaseNotes__WOjUk');
-        
-        if (versionButton && !versionButton.dataset.moved) {
-            versionButton.dataset.moved = 'true';
-            console.log('Номер версии обнаружен');
-        }
-    }
-    
-    // Запускаем при загрузке страницы
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', moveVersionButton);
-    } else {
-        moveVersionButton();
-    }
-    
-    // Наблюдаем за изменениями DOM
-    const observer = new MutationObserver(function(mutations) {
-        moveVersionButton();
-    });
-    
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-    
-    // Обновляем настройки каждые 2 секунды
-    setInterval(async () => {
-        const settings = await getSettings("VersionMover");
-        if (!settings) return;
 
+    // --- Инициализация ---
+
+    function init() {
+        const settingsStore = getAddonSettings('VersionMover');
+        let settings = settingsStore.getCurrent();
+
+        // Применяем сразу
         applySettings(settings);
-    }, 2000);
-    
-    // Первоначальная загрузка настроек
-    (async () => {
-        const settings = await getSettings("VersionMover");
-        if (settings) {
+
+        // Подписываемся на изменения — больше не нужен setInterval
+        settingsStore.onChange(function(nextSettings) {
+            settings = nextSettings;
             applySettings(settings);
-        }
-    })();
+        });
+    }
+
+    // Запускаем после загрузки DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
