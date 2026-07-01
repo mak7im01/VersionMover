@@ -3,7 +3,7 @@
     "libraryLogo": "logo.png",
     "author": "dobryjigrok",
     "description": "Настройка отображения номера версии",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "css": "style.css",
     "type": "script",
     "script": "script.js",

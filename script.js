@@ -69,7 +69,11 @@
             } else if (vPos === 3) {
                 verticalCSS = 'top: auto !important; bottom: 16px !important;';
             } else {
-                verticalCSS = 'top: 100px !important;';
+                // Если баннер скрыт — поднимаем версию выше
+                const hideBanner = readBooleanSetting(settings, 'hideBanner', true);
+                verticalCSS = hideBanner
+                    ? 'top: 46px !important;'
+                    : 'top: 100px !important;';
             }
 
             let cssRules = `
@@ -91,6 +95,19 @@
             cssRules += `}`;
             styleElement.textContent = cssRules;
         }
+
+        // Скрытие баннера "Моя волна обновилась"
+        let bannerStyle = document.getElementById('version-mover-banner-style');
+        if (!bannerStyle) {
+            bannerStyle = document.createElement('style');
+            bannerStyle.id = 'version-mover-banner-style';
+            document.head.appendChild(bannerStyle);
+        }
+
+        const hideBanner = readBooleanSetting(settings, 'hideBanner', true);
+        bannerStyle.textContent = hideBanner
+            ? '.MainPage_actionsBar__agoxp { display: none !important; }'
+            : '';
     }
 
     // --- Инициализация ---
@@ -102,7 +119,7 @@
         // Применяем сразу
         applySettings(settings);
 
-        // Подписываемся на изменения — больше не нужен setInterval
+        // Подписываемся на изменения
         settingsStore.onChange(function(nextSettings) {
             settings = nextSettings;
             applySettings(settings);

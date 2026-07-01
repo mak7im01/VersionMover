@@ -5,6 +5,15 @@
             "items": [
 
                 {
+                    "id": "hideBanner",
+                    "name": "Скрыть «Моя волна обновилась»",
+                    "description": "Убирает баннер «Моя волна обновилась» в правом верхнем углу",
+                    "type": "button",
+                    "bool": true,
+                    "defaultParameter": true
+                },
+
+                {
                     "id": "hideVersion",
                     "name": "Скрыть версию",
                     "description": "Полностью скрыть номер версии",
